@@ -1,91 +1,133 @@
-# 🛒 Zepto Product Data Analysis — SQL
+# 🛒 Zepto E-commerce SQL Data Analyst Portfolio Project
 
-A structured SQL project analyzing Zepto's product catalog to uncover pricing trends, discount patterns, inventory insights, and estimated category-level revenue.
+This is a complete, real-world data analyst portfolio project based on an e-commerce inventory dataset scraped from **Zepto** — one of India's fastest-growing quick-commerce startups. This project simulates real analyst workflows, from raw data exploration to business-focused SQL analysis.
+
+This project is perfect for:
+
+- 📊 **Data Analyst aspirants** who want to build a strong portfolio for interviews and LinkedIn
+- 📚 **Anyone learning SQL hands-on** with a real-world dataset
+- 💼 **Interview preparation** in retail, e-commerce, or product analytics
 
 ---
 
 ## 📌 Project Overview
 
-This project performs end-to-end data analysis on a Zepto grocery dataset using **PostgreSQL**. It covers data ingestion, exploration, cleaning, and business-focused querying — designed as a portfolio project to demonstrate real-world SQL skills.
+The goal is to simulate how actual data analysts in the e-commerce or retail industry use SQL to:
+
+✅ Set up a messy, real-world e-commerce inventory database
+
+✅ Perform **Exploratory Data Analysis (EDA)** to explore product categories, availability, and pricing inconsistencies
+
+✅ Implement **Data Cleaning** to handle null values, remove invalid entries, and convert pricing from paise to rupees
+
+✅ Write **business-driven SQL queries** to derive insights around pricing, inventory, stock availability, revenue, and more
 
 ---
 
-## 🗂️ Dataset
+## 📁 Dataset Overview
+
+The dataset was originally scraped from **Zepto's official product listings**. It mimics what you'd typically encounter in a real-world e-commerce inventory system.
+
+Each row represents a unique **SKU (Stock Keeping Unit)**. Duplicate product names exist because the same product may appear in different package sizes, weights, or discount tiers — exactly how real catalog data looks.
+
+### 🧾 Columns
 
 | Column | Description |
 |---|---|
-| `sku_id` | Unique product identifier |
-| `category` | Product category |
-| `name` | Product name |
-| `mrp` | Maximum Retail Price |
-| `discountPercent` | Discount offered (%) |
-| `discountedSellingPrice` | Final price after discount |
-| `weightInGms` | Product weight in grams |
+| `sku_id` | Unique identifier for each product entry (Synthetic Primary Key) |
+| `name` | Product name as it appears on the app |
+| `category` | Product category (Fruits, Snacks, Beverages, etc.) |
+| `mrp` | Maximum Retail Price (originally in paise, converted to ₹) |
+| `discountPercent` | Discount applied on MRP |
+| `discountedSellingPrice` | Final price after discount (also converted to ₹) |
 | `availableQuantity` | Units available in inventory |
-| `outOfStock` | Stock availability (boolean) |
-| `quantity` | Quantity per unit |
+| `weightInGms` | Product weight in grams |
+| `outOfStock` | Boolean flag indicating stock availability |
+| `quantity` | Number of units per package |
 
 ---
 
-## 🔍 What's Covered
+## 🔧 Project Workflow
 
-### 1. Data Exploration
-- Row count and sample data preview
-- Null value checks across all columns
-- Distinct product categories
-- In-stock vs out-of-stock product counts
-- Products with duplicate SKUs
-
-### 2. Data Cleaning
-- Removed products with MRP = 0
-- Converted prices from **paise to rupees** (divided by 100)
-
-### 3. Business Analysis Queries
-
-| # | Question |
-|---|---|
-| Q1 | Top 10 best-value products by discount percentage |
-| Q2 | High MRP products that are currently out of stock |
-| Q3 | Estimated revenue per category |
-| Q4 | Premium products (MRP > ₹500) with low discounts (< 10%) |
-| Q5 | Top 5 categories by average discount percentage |
-| Q6 | Price per gram for products above 100g (best value sort) |
-| Q7 | Products grouped by weight: Low / Medium / Bulk |
-| Q8 | Total inventory weight per category |
-
----
-
-## 💡 Key Insights
-
-- Several high-MRP products are out of stock, representing potential lost revenue
-- A few categories consistently offer higher discounts than others
-- Price-per-gram analysis reveals which products offer the best value for money
-- Bulk weight products are concentrated in specific categories
-
----
-
-## 🛠️ Tech Stack
-
-- **Database:** PostgreSQL
-- **Language:** SQL
-- **Concepts Used:** Aggregations, Filtering, CASE statements, CTEs (implicit), Window logic, Data type conversion
-
----
-
-## 🚀 How to Run
-
-1. Set up a PostgreSQL database
-2. Run the table creation script to create the `zepto` table
-3. Import your dataset (CSV or manual inserts)
-4. Execute the queries in order — exploration → cleaning → analysis
+### 1. 🏗️ Database & Table Creation
 
 ```sql
--- Start here
-DROP TABLE IF EXISTS zepto;
-CREATE TABLE zepto ( ... );
-
--- Then run exploration, cleaning, and analysis queries
+CREATE TABLE zepto (
+  sku_id SERIAL PRIMARY KEY,
+  category VARCHAR(120),
+  name VARCHAR(150) NOT NULL,
+  mrp NUMERIC(8,2),
+  discountPercent NUMERIC(5,2),
+  availableQuantity INTEGER,
+  discountedSellingPrice NUMERIC(8,2),
+  weightInGms INTEGER,
+  outOfStock BOOLEAN,
+  quantity INTEGER
+);
 ```
+
+### 2. 📥 Data Import
+
+Loaded CSV using pgAdmin's import feature. If you face encoding issues, use:
+
+```sql
+\copy zepto(category, name, mrp, discountPercent, availableQuantity,
+            discountedSellingPrice, weightInGms, outOfStock, quantity)
+FROM 'data/zepto_v2.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',', QUOTE '"', ENCODING 'UTF8');
+```
+
+> ⚠️ If you face a UTF-8 encoding error, save the CSV as **CSV UTF-8** format and retry.
+
+### 3. 🔍 Data Exploration
+
+- Counted the total number of records in the dataset
+- Viewed a sample of the dataset to understand structure and content
+- Checked for **null values** across all columns
+- Identified **distinct product categories** in the dataset
+- Compared **in-stock vs out-of-stock** product counts
+- Detected products present multiple times as different SKUs
+
+### 4. 🧹 Data Cleaning
+
+- Identified and removed rows where **MRP or discounted selling price was zero**
+- Converted `mrp` and `discountedSellingPrice` from **paise to rupees** for readability
+
+### 5. 📊 Business Insights (SQL Queries)
+
+| # | Business Question |
+|---|---|
+| Q1 | Top 10 best-value products based on discount percentage |
+| Q2 | High-MRP products that are currently out of stock |
+| Q3 | Estimated revenue per product category |
+| Q4 | Expensive products (MRP > ₹500) with minimal discount (< 10%) |
+| Q5 | Top 5 categories offering highest average discount |
+| Q6 | Price per gram for products above 100g — best value sort |
+| Q7 | Products grouped by weight: Low / Medium / Bulk |
+| Q8 | Total inventory weight per product category |
+
+---
+
+## 🛠️ How to Use This Project
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/your-username/zepto-sql-analysis.git
+cd zepto-sql-analysis
+```
+
+**2. Open `zepto_analysis.sql`**
+
+This file contains:
+- Table creation
+- Data exploration queries
+- Data cleaning steps
+- Business analysis queries
+
+**3. Set up PostgreSQL**
+- Open **pgAdmin** or any PostgreSQL client
+- Create a new database
+- Run the SQL file
+- Import the dataset (convert to UTF-8 if necessary)
 
 ---
 
@@ -94,14 +136,28 @@ CREATE TABLE zepto ( ... );
 ```
 zepto-sql-analysis/
 │
-├── zepto_analysis.sql     # All SQL queries (exploration + cleaning + analysis)
+├── zepto_analysis.sql     # All SQL queries
+├── data/
+│   └── zepto_v2.csv       # Raw dataset
 └── README.md              # Project documentation
 ```
 
 ---
 
-## 🙋‍♂️ Author
+## 📜 License
 
-**Ram Kishore L R**  
- • [Linkedin](https://www.linkedin.com/in/ramkishore87/)
+MIT — feel free to fork ⭐, star, and use in your own portfolio.
 
+---
+
+## 👨‍💻 About the Author
+
+Hey, I'm **Ram Kishore L R** — a passionate Data Analyst who enjoys turning raw data into meaningful business insights using SQL and analytics tools.
+
+### 🚀 Let's Connect
+
+💼 [LinkedIn — Ram Kishore L R](https://www.linkedin.com/in/ramkishore87/)
+
+---
+
+💡 *Thanks for checking out the project! Feel free to ⭐ star this repo or share it with someone learning SQL.* 🚀
